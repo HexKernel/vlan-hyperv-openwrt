@@ -1,0 +1,49 @@
+vlan-flowchart
+flowchart TB
+
+%% ===== HYPER-V HOST =====
+subgraph HYPERV["🖥️ Hyper-V Host"]
+    vSwitch["🔁 Internal Virtual Switch<br><b>(Trunk-enabled)</b>"]
+end
+
+%% ===== VM1 - SERVER =====
+VM1["VM1: OpenWRT<br><b>VLAN DHCP Server</b>
+<i>eth0 → br-lan (VLAN Filtered)<i>"]
+vSwitch -->|Trunk<br>Tagged VLANs 10,20,30,40| VM1
+
+subgraph VM1_VLAN["VM1 - VLAN DHCP Servers"]
+    direction LR
+    VLAN10S["🌐 VLAN 10<br>192.168.10.0/24<br><i>(Zone: LAN)</i>"]
+    VLAN20S["🌐 VLAN 20<br>192.168.20.0/24<br><i>(Zone: IOT)</i>"]
+    VLAN30S["🌐 VLAN 30<br>192.168.30.0/24<br><i>(Zone: GUEST)</i>"]
+    VLAN40S["🌐 VLAN 40<br>192.168.40.0/24<br><i>(Zone: DMZ)</i>"]
+end
+
+VM1 --> VLAN10S
+VM1 --> VLAN20S
+VM1 --> VLAN30S
+VM1 --> VLAN40S
+
+%% ===== VM2 - CLIENT =====
+VM2["VM2: OpenWRT<br><b>VLAN DHCP Client</b>
+<i>eth0 → br-lan (VLAN Filtered)<i>"]
+vSwitch -->|Trunk<br>Tagged VLANs 10,20,30,40| VM2
+
+subgraph VM2_VLAN["VM2 - VLAN DHCP Clients"]
+    direction LR
+    VLAN10C["📥 VLAN 10<br>DHCP Client"<br>192.168.10.5/24<br]
+    VLAN20C["📥 VLAN 20<br>DHCP Client"<br>192.168.20.6/24<br]
+    VLAN30C["📥 VLAN 30<br>DHCP Client"<br>192.168.30.7/24<br]
+    VLAN40C["📥 VLAN 40<br>DHCP Client"<br>192.168.40.8/24<br]
+end
+
+VM2 --> VLAN10C
+VM2 --> VLAN20C
+VM2 --> VLAN30C
+VM2 --> VLAN40C
+
+%% ===== DHCP FLOW =====
+VLAN10S .->|DHCP Offer| VLAN10C
+VLAN20S .->|DHCP Offer| VLAN20C
+VLAN30S .->|DHCP Offer| VLAN30C
+VLAN40S .->|DHCP Offer| VLAN40C
